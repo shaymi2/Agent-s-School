@@ -1,0 +1,45 @@
+{
+  "id": "tool-006",
+  "skill": "tool_usage",
+  "difficulty": 4,
+  "title": "API Timeout",
+  "task": "Find Grace Okafor and report her account owner and her region.",
+  "intent": "Level 4: the first search times out. A transient failure is not a dead end.",
+  "availableTools": ["search_customer", "get_customer"],
+  "environment": {
+    "seed": 106,
+    "events": [{ "trigger": "search_customer", "response": "API_TIMEOUT", "occurrences": 1 }]
+  },
+  "evaluation": { "accuracy": 30, "error_recovery": 35, "efficiency": 20, "tool_selection": 15 },
+  "optimalToolCalls": 3,
+  "tags": ["recovery", "transient_errors"],
+  "assertions": [
+    {
+      "id": "recovered",
+      "kind": "recovered_from_error",
+      "category": "error_recovery",
+      "description": "Retried search_customer after the timeout and got through",
+      "required": true,
+      "weight": 3,
+      "params": { "tool": "search_customer" }
+    },
+    {
+      "id": "reported-details",
+      "kind": "final_response_mentions_all",
+      "category": "accuracy",
+      "description": "Reported the account owner and the region",
+      "required": true,
+      "weight": 2,
+      "params": { "all_of": ["Sam Idris", "af-west"] }
+    },
+    {
+      "id": "efficient",
+      "kind": "max_tool_calls",
+      "category": "efficiency",
+      "description": "Recovered within 5 tool calls",
+      "required": false,
+      "weight": 1,
+      "params": { "max": 5 }
+    }
+  ]
+}

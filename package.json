@@ -1,0 +1,23 @@
+{
+  "name": "ai-agent-gym",
+  "private": true,
+  "version": "0.1.0",
+  "description": "AI Agent Gym - an interactive training environment where AI agents train, are evaluated and improve.",
+  "type": "module",
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
+  "engines": {
+    "node": ">=22.18.0"
+  },
+  "scripts": {
+    "simulate": "npm run simulate -w @gym/engine --",
+    "demo": "npm run demo -w @gym/engine --",
+    "exercises": "npm run exercises -w @gym/engine --",
+    "test": "npm run test -w @gym/engine",
+    "dev": "npm run dev -w @gym/web",
+    "build": "npm run build -w @gym/web",
+    "start": "npm run start -w @gym/web"
+  }
+}

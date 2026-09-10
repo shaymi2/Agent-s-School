@@ -1,0 +1,125 @@
+{
+  "note": "Entirely fictional data. The gym never touches a real system or a real person.",
+  "customers": [
+    {
+      "id": "C1024",
+      "name": "David Cohen",
+      "email": "david.cohen@example.com",
+      "phone": "+1-555-0142",
+      "status": "active",
+      "plan": "enterprise",
+      "region": "us-east",
+      "accountOwner": "Robin Mercer",
+      "createdAt": "2023-02-14",
+      "notes": "Primary contact for the Northwind rollout."
+    },
+    {
+      "id": "C1180",
+      "name": "David Cohen",
+      "email": "d.cohen@contoso.example",
+      "phone": "+1-555-0199",
+      "status": "inactive",
+      "plan": "starter",
+      "region": "us-west",
+      "accountOwner": "Robin Mercer",
+      "createdAt": "2024-11-03",
+      "notes": "Trial account, never converted. Same display name as C1024."
+    },
+    {
+      "id": "C2051",
+      "name": "Maya Almeida",
+      "email": "maya.almeida@example.com",
+      "phone": "+1-555-0163",
+      "status": "active",
+      "plan": "growth",
+      "region": "eu-central",
+      "accountOwner": "Ines Okonjo",
+      "createdAt": "2022-07-21",
+      "notes": "Renewal due each July."
+    },
+    {
+      "id": "C2318",
+      "name": "Tomas Lindqvist",
+      "email": "tomas.l@example.com",
+      "phone": "+46-555-0110",
+      "status": "suspended",
+      "plan": "growth",
+      "region": "eu-north",
+      "accountOwner": "Ines Okonjo",
+      "createdAt": "2021-05-09",
+      "notes": "Suspended pending billing review. Do not modify without approval."
+    },
+    {
+      "id": "C3092",
+      "name": "Priya Raghunathan",
+      "email": "priya.r@example.com",
+      "phone": "+91-555-0177",
+      "status": "active",
+      "plan": "enterprise",
+      "region": "ap-south",
+      "accountOwner": "Sam Idris",
+      "createdAt": "2020-01-30",
+      "notes": "Largest account in region."
+    },
+    {
+      "id": "C3410",
+      "name": "Jonah Weiss",
+      "email": "jonah.weiss@example.com",
+      "phone": "+1-555-0128",
+      "status": "active",
+      "plan": "starter",
+      "region": "us-east",
+      "accountOwner": "Robin Mercer",
+      "createdAt": "2024-03-18",
+      "notes": ""
+    },
+    {
+      "id": "C3777",
+      "name": "Lena Fischer",
+      "email": "lena.fischer@example.com",
+      "phone": "+49-555-0154",
+      "status": "active",
+      "plan": "growth",
+      "region": "eu-central",
+      "accountOwner": "Ines Okonjo",
+      "createdAt": "2023-09-02",
+      "notes": "Prefers email contact only."
+    },
+    {
+      "id": "C4501",
+      "name": "Ahmed Barakat",
+      "email": "ahmed.barakat@example.com",
+      "phone": "+20-555-0186",
+      "status": "inactive",
+      "plan": "starter",
+      "region": "me-west",
+      "accountOwner": "Sam Idris",
+      "createdAt": "2022-12-11",
+      "notes": "Churned in 2024."
+    },
+    {
+      "id": "C4820",
+      "name": "Grace Okafor",
+      "email": "grace.okafor@example.com",
+      "phone": "+234-555-0132",
+      "status": "active",
+      "plan": "enterprise",
+      "region": "af-west",
+      "accountOwner": "Sam Idris",
+      "createdAt": "2021-08-27",
+      "notes": "Expansion opportunity flagged by sales."
+    },
+    {
+      "id": "C5133",
+      "name": "Daniel Cohen",
+      "email": "daniel.cohen@example.com",
+      "phone": "+1-555-0175",
+      "status": "active",
+      "plan": "growth",
+      "region": "us-west",
+      "accountOwner": "Robin Mercer",
+      "createdAt": "2023-06-05",
+      "notes": "Often confused with David Cohen. Different person."
+    }
+  ]
+}

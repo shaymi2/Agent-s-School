@@ -1,0 +1,52 @@
+{
+  "skills": [
+    {
+      "id": "tool_usage",
+      "name": "Tool Usage",
+      "icon": "🛠",
+      "blurb": "Pick the right tool, verify before you write, and recover when the API misbehaves.",
+      "status": "active",
+      "dimensions": ["accuracy", "tool_selection", "efficiency", "verification", "error_recovery", "safety", "communication"]
+    },
+    {
+      "id": "reasoning",
+      "name": "Reasoning",
+      "icon": "🧠",
+      "blurb": "Multi-step logic, planning and constraint satisfaction under partial information.",
+      "status": "locked",
+      "dimensions": ["reasoning", "planning", "accuracy"]
+    },
+    {
+      "id": "research",
+      "name": "Research",
+      "icon": "🔍",
+      "blurb": "Search, source verification and synthesis across disagreeing documents.",
+      "status": "locked",
+      "dimensions": ["accuracy", "verification", "communication"]
+    },
+    {
+      "id": "memory",
+      "name": "Memory",
+      "icon": "💾",
+      "blurb": "Long-horizon recall, retrieval and knowing when a memory has gone stale.",
+      "status": "locked",
+      "dimensions": ["accuracy", "efficiency", "planning"]
+    },
+    {
+      "id": "multi_agent",
+      "name": "Multi-Agent",
+      "icon": "🤝",
+      "blurb": "Delegation, hand-off and collaboration without dropping the thread.",
+      "status": "locked",
+      "dimensions": ["planning", "communication", "efficiency"]
+    },
+    {
+      "id": "safety",
+      "name": "Safety",
+      "icon": "🛡",
+      "blurb": "Prompt injection, permission boundaries and refusing the plausible-but-wrong action.",
+      "status": "locked",
+      "dimensions": ["safety", "verification", "communication"]
+    }
+  ]
+}
