@@ -55,7 +55,11 @@ export type DimensionScores = Partial<Record<DimensionId, number>>;
 
 /* ------------------------------------------------------------------ Agents */
 
-export type ProviderKind = 'heuristic' | 'anthropic' | 'openai_compatible';
+/**
+ * Who is driving the trainee. `external` means nobody in this process is: a
+ * caller submits the tool calls over the API and the gym only judges them.
+ */
+export type ProviderKind = 'heuristic' | 'anthropic' | 'openai_compatible' | 'external';
 
 /**
  * A trainee agent's configuration. `provider` decides which brain drives it;

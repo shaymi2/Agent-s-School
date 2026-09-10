@@ -26,6 +26,7 @@ export {
 
 export { HeuristicTraineeAgent } from './agents/heuristicTrainee.ts';
 export { LlmTraineeAgent } from './agents/llmTrainee.ts';
+export { ExternalTraineeAgent } from './agents/externalTrainee.ts';
 export { createTrainee } from './agents/factory.ts';
 export { parseTask } from './agents/taskParser.ts';
 

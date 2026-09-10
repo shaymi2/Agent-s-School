@@ -90,6 +90,12 @@ const PLAYBOOK: Record<
 
 const EMPTY_GUIDANCE: CoachGuidance = { focusDimensions: [], rules: [] };
 
+/**
+ * A dimension above this is not a weakness. Without a floor the coach would
+ * find something to fix in a 99, which is how coaching turns into noise.
+ */
+export const COACH_WEAKNESS_THRESHOLD = 85;
+
 export interface CoachInput {
   sessionId: string;
   agentId: string;
@@ -111,7 +117,7 @@ export function rankWeaknesses(
       const score = evaluation.metrics[dimension] ?? 100;
       return { dimension, score, deficit: ((100 - score) * weight) / 100 };
     })
-    .filter((entry) => entry.deficit > 0)
+    .filter((entry) => entry.score < COACH_WEAKNESS_THRESHOLD)
     .sort((a, b) => b.deficit - a.deficit || a.dimension.localeCompare(b.dimension));
 }
 
@@ -137,16 +143,23 @@ function mergeGuidance(
   return merged;
 }
 
-/** Does coaching this dimension actually add anything the agent is not already told? */
+/**
+ * Does coaching this dimension actually change anything?
+ *
+ * Restating a lesson the agent is already following wastes an attempt, so a
+ * dimension only counts as new coaching if it flips a behaviour flag that is
+ * not already set. Dimensions that carry no flag — communication, say — fall
+ * back to whether the wording itself is new.
+ */
 function addsSomething(active: CoachGuidance | null, dimension: DimensionId): boolean {
   const play = PLAYBOOK[dimension];
   if (!play) return false;
   if (!active) return true;
-  const newRule = play.rules.some((rule) => !active.rules.includes(rule));
-  const newFlag = Object.entries(play.flags).some(
-    ([key, value]) => (active as unknown as Record<string, unknown>)[key] !== value,
-  );
-  return newRule || newFlag;
+  const flags = Object.entries(play.flags);
+  if (flags.length > 0) {
+    return flags.some(([key, value]) => (active as unknown as Record<string, unknown>)[key] !== value);
+  }
+  return play.rules.some((rule) => !active.rules.includes(rule));
 }
 
 function pickDrills(

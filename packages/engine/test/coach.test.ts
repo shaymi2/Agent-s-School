@@ -55,7 +55,10 @@ describe('coach', () => {
     const ranked = rankWeaknesses(requireExercise('tool-007'), evaluation());
     assert.equal(ranked[0].dimension, 'error_recovery', 'a 30-weight zero outranks a 10-weight zero');
     assert.equal(ranked.at(-1)?.dimension, 'verification');
-    assert.ok(ranked.every((entry) => entry.deficit > 0), 'perfect dimensions are not weaknesses');
+    assert.ok(
+      ranked.every((entry) => entry.score < 85),
+      'a dimension that is already strong is not a weakness',
+    );
   });
 
   test('turns the top weakness into machine-readable guidance', () => {
@@ -88,6 +91,20 @@ describe('coach', () => {
     );
   });
 
+  test('coaching that only restates an active lesson is skipped for one that changes behaviour', () => {
+    // A verification lesson learned on a different exercise already set the
+    // flag. Coaching "accuracy" here would reword it without changing
+    // anything, so the coach must move to the weakness that is still open.
+    const carried = {
+      focusDimensions: ['verification' as const],
+      rules: ['Read the record you are about to change before you change it.'],
+      requireVerification: true,
+    };
+    const feedback = coachHeuristically(input({ activeGuidance: carried }));
+    assert.equal(feedback.guidance.retryTransientErrors, true);
+    assert.equal(feedback.guidance.focusDimensions.at(-1), 'error_recovery');
+  });
+
   test('says something different from the judge', () => {
     const feedback = coachHeuristically(input());
     assert.ok(feedback.message.length > 40);
@@ -118,6 +135,20 @@ describe('coach', () => {
       }),
     );
     assert.match(feedback.headline, /Clean run/);
+  });
+
+  test('a strong pass is not picked apart for a dimension in the nineties', () => {
+    const feedback = coachHeuristically(
+      input({
+        evaluation: evaluation({
+          success: true,
+          score: 99,
+          metrics: { accuracy: 100, error_recovery: 95, verification: 100, safety: 100, efficiency: 100 },
+        }),
+      }),
+    );
+    assert.match(feedback.headline, /Clean run/);
+    assert.deepEqual(feedback.weaknesses, []);
   });
 });
 

@@ -33,6 +33,7 @@ import type {
   Session,
   ToolCall,
   ToolResult,
+  TraineeAgent,
 } from '../domain/types.ts';
 
 export interface OrchestratorOptions {
@@ -103,7 +104,12 @@ export class GymOrchestrator {
     return this.runPrepared(this.prepareSession(request));
   }
 
-  async runPrepared(session: Session): Promise<SessionResult> {
+  /**
+   * Run a session that was prepared earlier. Pass `trainee` to drive it with
+   * an agent instance the caller already holds, which is what an externally
+   * driven session needs.
+   */
+  async runPrepared(session: Session, trainee?: TraineeAgent): Promise<SessionResult> {
     const agent = this.store.getAgent(session.agentId)!;
     const exercise = requireExercise(session.exerciseId);
     const events: GymEvent[] = [];
@@ -172,8 +178,8 @@ export class GymOrchestrator {
     let stepsUsed = 0;
 
     try {
-      const trainee = createTrainee(agent);
-      const outcome = await trainee.run(
+      const athlete = trainee ?? createTrainee(agent);
+      const outcome = await athlete.run(
         {
           sessionId: session.id,
           agent,

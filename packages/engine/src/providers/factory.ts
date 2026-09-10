@@ -28,7 +28,7 @@ function env(): ProviderEnv {
 
 /** True when a real model can be reached for the given provider kind. */
 export function providerAvailable(kind: ProviderKind): boolean {
-  if (kind === 'heuristic') return true;
+  if (kind === 'heuristic' || kind === 'external') return true;
   if (kind === 'anthropic') return Boolean(env().ANTHROPIC_API_KEY);
   return Boolean(env().GYM_OPENAI_API_KEY && env().GYM_OPENAI_BASE_URL);
 }

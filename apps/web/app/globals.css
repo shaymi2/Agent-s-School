@@ -1,0 +1,108 @@
+@import 'tailwindcss';
+
+/*
+ * Design language: an AI laboratory, not a SaaS dashboard.
+ * Dark instrument panel, monospace for anything measured, one accent colour
+ * per system state. Colour is information here: cyan is the agent, amber is
+ * the environment interfering, red is a failure, green is a verified pass.
+ */
+
+@theme {
+  --color-void: #06080d;
+  --color-panel: #0b0f17;
+  --color-panel-2: #10151f;
+  --color-line: #1b2333;
+  --color-line-bright: #2b3852;
+
+  --color-ink: #e6ecf7;
+  --color-ink-dim: #8b97ad;
+  --color-ink-faint: #55617a;
+
+  --color-agent: #35e0d0;
+  --color-coach: #a78bfa;
+  --color-env: #f5a524;
+  --color-fail: #ff5c72;
+  --color-pass: #3ddc84;
+
+  --font-mono: ui-monospace, 'SF Mono', 'JetBrains Mono', Menlo, Consolas, monospace;
+
+  --animate-pulse-ring: pulse-ring 1.4s ease-out infinite;
+  --animate-slide-in: slide-in 0.24s cubic-bezier(0.2, 0.8, 0.2, 1);
+  --animate-scan: scan 2.6s linear infinite;
+}
+
+@keyframes pulse-ring {
+  0% {
+    box-shadow: 0 0 0 0 color-mix(in oklab, var(--color-agent) 55%, transparent);
+  }
+  100% {
+    box-shadow: 0 0 0 14px transparent;
+  }
+}
+
+@keyframes slide-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes scan {
+  from {
+    transform: translateY(-100%);
+  }
+  to {
+    transform: translateY(100%);
+  }
+}
+
+html,
+body {
+  background: var(--color-void);
+  color: var(--color-ink);
+}
+
+body {
+  font-family:
+    ui-sans-serif,
+    system-ui,
+    -apple-system,
+    'Segoe UI',
+    sans-serif;
+  min-height: 100vh;
+  /* The lab floor: a faint grid, not decoration for its own sake. */
+  background-image:
+    linear-gradient(color-mix(in oklab, var(--color-line) 45%, transparent) 1px, transparent 1px),
+    linear-gradient(90deg, color-mix(in oklab, var(--color-line) 45%, transparent) 1px, transparent 1px);
+  background-size: 44px 44px;
+  background-attachment: fixed;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-line);
+  border-radius: 6px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-line-bright);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

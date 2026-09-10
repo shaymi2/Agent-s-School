@@ -18,6 +18,8 @@
     "test": "npm run test -w @gym/engine",
     "dev": "npm run dev -w @gym/web",
     "build": "npm run build -w @gym/web",
-    "start": "npm run start -w @gym/web"
+    "start": "npm run start -w @gym/web",
+    "typecheck": "npm run typecheck -w @gym/engine && npm run typecheck -w @gym/web",
+    "smoke": "npm run smoke -w @gym/web --"
   }
 }
