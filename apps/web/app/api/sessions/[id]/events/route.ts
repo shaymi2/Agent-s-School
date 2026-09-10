@@ -26,6 +26,7 @@ export async function GET(
   const encoder = new TextEncoder();
   let unsubscribe: (() => void) | null = null;
   let heartbeat: ReturnType<typeof setInterval> | null = null;
+  let poll: ReturnType<typeof setInterval> | null = null;
 
   const stream = new ReadableStream<Uint8Array>({
     start(controller) {
@@ -48,6 +49,7 @@ export async function GET(
         closed = true;
         unsubscribe?.();
         if (heartbeat) clearInterval(heartbeat);
+        if (poll) clearInterval(poll);
         try {
           controller.close();
         } catch {
@@ -73,6 +75,24 @@ export async function GET(
         close();
       }
 
+      // The event log in SQLite is the source of truth: every event is
+      // persisted before it is published. Polling it alongside the in-process
+      // bus means the stream still works when the publisher and the
+      // subscriber are not the same module instance, which is exactly what a
+      // dev server's per-route bundling produces.
+      poll = setInterval(() => {
+        if (closed) return;
+        try {
+          for (const event of store.listEvents(id, highWater)) send(event);
+          if (!closed) {
+            const current = store.getSession(id);
+            if (current && (current.status === 'completed' || current.status === 'failed')) close();
+          }
+        } catch {
+          close();
+        }
+      }, 200);
+
       heartbeat = setInterval(() => {
         if (closed) return;
         try {
@@ -87,6 +107,7 @@ export async function GET(
     cancel() {
       unsubscribe?.();
       if (heartbeat) clearInterval(heartbeat);
+      if (poll) clearInterval(poll);
     },
   });
 
@@ -94,9 +115,9 @@ export async function GET(
     headers: {
       'content-type': 'text/event-stream; charset=utf-8',
       'cache-control': 'no-cache, no-transform',
-      // Without this the response is gzipped, and gzip buffers the stream:
-      // the browser then sees nothing until the session has already finished.
-      'content-encoding': 'none',
+      // Asks an intermediary proxy not to buffer the stream. Never set
+      // content-encoding here: a bogus value survives in dev and stops the
+      // client decoding the body at all.
       'x-accel-buffering': 'no',
     },
   });

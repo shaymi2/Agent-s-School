@@ -29,5 +29,17 @@ export class EventBus {
   }
 }
 
-/** Shared bus, so an HTTP route handler and the orchestrator see the same stream. */
-export const gymBus = new EventBus();
+/**
+ * Shared bus, so an HTTP route handler and the orchestrator see the same
+ * stream.
+ *
+ * It hangs off globalThis under a registered symbol rather than being a plain
+ * module singleton: a bundler that gives two routes their own copy of this
+ * module would otherwise hand them two different buses, and the publisher
+ * would be shouting into one while the subscriber listened to the other.
+ */
+const BUS_KEY = Symbol.for('ai-agent-gym.event-bus');
+type BusHolder = { [BUS_KEY]?: EventBus };
+const holder = globalThis as unknown as BusHolder;
+
+export const gymBus: EventBus = (holder[BUS_KEY] ??= new EventBus());
