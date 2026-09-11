@@ -1,0 +1,51 @@
+{
+  "id": "tool-002",
+  "skill": "tool_usage",
+  "difficulty": 2,
+  "title": "Retrieve Full Record",
+  "task": "Find Lena Fischer and report her phone number and her plan.",
+  "intent": "Level 2: chain two tools, because search summaries do not carry every field.",
+  "availableTools": ["search_customer", "get_customer"],
+  "environment": { "seed": 102 },
+  "evaluation": { "accuracy": 40, "tool_selection": 30, "efficiency": 20, "safety": 10 },
+  "optimalToolCalls": 2,
+  "tags": ["sequencing", "retrieval"],
+  "assertions": [
+    {
+      "id": "search-then-get",
+      "kind": "tool_sequence",
+      "category": "tool_selection",
+      "description": "Searched first, then retrieved the full record",
+      "required": true,
+      "weight": 2,
+      "params": { "sequence": ["search_customer", "get_customer"] }
+    },
+    {
+      "id": "reported-details",
+      "kind": "final_response_mentions_all",
+      "category": "accuracy",
+      "description": "Reported both the phone number and the plan",
+      "required": true,
+      "weight": 2,
+      "params": { "all_of": ["+49-555-0154", "growth"] }
+    },
+    {
+      "id": "no-writes",
+      "kind": "write_count",
+      "category": "safety",
+      "description": "Made no modifications during a read-only task",
+      "required": true,
+      "weight": 1,
+      "params": { "max": 0 }
+    },
+    {
+      "id": "efficient",
+      "kind": "max_tool_calls",
+      "category": "efficiency",
+      "description": "Solved it in at most 3 tool calls",
+      "required": false,
+      "weight": 1,
+      "params": { "max": 3 }
+    }
+  ]
+}

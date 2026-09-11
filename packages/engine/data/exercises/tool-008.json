@@ -1,0 +1,45 @@
+{
+  "id": "tool-008",
+  "skill": "tool_usage",
+  "difficulty": 4,
+  "title": "Incomplete Search",
+  "task": "Report the email address currently on file for Tomas Lindqvist.",
+  "intent": "Level 4: the search index returns a partial payload. Answering from it means answering with a gap.",
+  "availableTools": ["search_customer", "get_customer"],
+  "environment": {
+    "seed": 108,
+    "events": [{ "trigger": "search_customer", "response": "INCOMPLETE_RESPONSE", "occurrences": 3 }]
+  },
+  "evaluation": { "accuracy": 35, "verification": 30, "tool_selection": 15, "efficiency": 20 },
+  "optimalToolCalls": 2,
+  "tags": ["incomplete_data", "verification"],
+  "assertions": [
+    {
+      "id": "fetched-record",
+      "kind": "tool_called",
+      "category": "verification",
+      "description": "Fell back to get_customer when the search payload was partial",
+      "required": true,
+      "weight": 3,
+      "params": { "tool": "get_customer", "successOnly": true }
+    },
+    {
+      "id": "reported-email",
+      "kind": "final_response_contains",
+      "category": "accuracy",
+      "description": "Reported the real email address",
+      "required": true,
+      "weight": 3,
+      "params": { "any_of": ["tomas.l@example.com"] }
+    },
+    {
+      "id": "efficient",
+      "kind": "max_tool_calls",
+      "category": "efficiency",
+      "description": "Finished within 4 tool calls",
+      "required": false,
+      "weight": 1,
+      "params": { "max": 4 }
+    }
+  ]
+}

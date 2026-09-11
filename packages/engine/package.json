@@ -1,0 +1,26 @@
+{
+  "name": "@gym/engine",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "AI Agent Gym simulation engine: sandbox, tools, exercises, trainee/judge/coach agents, orchestrator and persistence. Runs end to end with no API key; the Anthropic SDK is only loaded when an LLM provider is selected.",
+  "main": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./data/*": "./data/*"
+  },
+  "scripts": {
+    "simulate": "node --disable-warning=ExperimentalWarning src/cli/simulate.ts",
+    "demo": "node --disable-warning=ExperimentalWarning src/cli/demo.ts",
+    "exercises": "node --disable-warning=ExperimentalWarning src/cli/exercises.ts",
+    "test": "node --disable-warning=ExperimentalWarning --test --test-reporter=spec \"test/*.test.ts\"",
+    "typecheck": "tsc --noEmit -p tsconfig.json"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.125.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "typescript": "^5.9.0"
+  }
+}

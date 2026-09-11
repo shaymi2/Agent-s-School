@@ -1,0 +1,9 @@
+node_modules/
+.gym/
+.next/
+out/
+dist/
+*.tsbuildinfo
+.DS_Store
+.env
+.env.local

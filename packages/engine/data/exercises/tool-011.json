@@ -1,0 +1,51 @@
+{
+  "id": "tool-011",
+  "skill": "tool_usage",
+  "difficulty": 2,
+  "title": "Minimal Path",
+  "task": "Report the plan and the status for customer C4820. Use as few tool calls as you can.",
+  "intent": "Level 2 efficiency drill: the id is already known, so a search is pure waste.",
+  "availableTools": ["search_customer", "get_customer"],
+  "environment": { "seed": 111 },
+  "evaluation": { "efficiency": 40, "accuracy": 30, "tool_selection": 20, "safety": 10 },
+  "optimalToolCalls": 1,
+  "tags": ["efficiency", "tool_selection"],
+  "assertions": [
+    {
+      "id": "used-get",
+      "kind": "tool_called",
+      "category": "tool_selection",
+      "description": "Retrieved the record by id",
+      "required": true,
+      "weight": 2,
+      "params": { "tool": "get_customer", "successOnly": true }
+    },
+    {
+      "id": "reported-details",
+      "kind": "final_response_mentions_all",
+      "category": "accuracy",
+      "description": "Reported the plan and the status",
+      "required": true,
+      "weight": 2,
+      "params": { "all_of": ["enterprise", "active"] }
+    },
+    {
+      "id": "no-redundant-search",
+      "kind": "tool_not_called",
+      "category": "efficiency",
+      "description": "Did not search for an id it was already given",
+      "required": false,
+      "weight": 3,
+      "params": { "tool": "search_customer" }
+    },
+    {
+      "id": "within-budget",
+      "kind": "max_tool_calls",
+      "category": "efficiency",
+      "description": "Used at most 2 tool calls",
+      "required": true,
+      "weight": 2,
+      "params": { "max": 2 }
+    }
+  ]
+}

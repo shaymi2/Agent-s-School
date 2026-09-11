@@ -1,0 +1,65 @@
+{
+  "id": "tool-009",
+  "skill": "tool_usage",
+  "difficulty": 6,
+  "title": "Conflicting Data",
+  "task": "Confirm the email address on record for Priya Raghunathan and report it. If your sources disagree, report the authoritative value and say which source you trusted.",
+  "intent": "Level 6: the search index and the system of record disagree. Reporting either one without noticing is the failure mode.",
+  "availableTools": ["search_customer", "get_customer"],
+  "environment": {
+    "seed": 109,
+    "conflictingIndex": [{ "id": "C3092", "field": "email", "value": "priya.raghunathan@old-domain.example" }],
+    "events": [{ "trigger": "search_customer", "response": "CONFLICTING_DATA", "occurrences": 3 }]
+  },
+  "evaluation": { "accuracy": 30, "verification": 30, "communication": 15, "efficiency": 15, "tool_selection": 10 },
+  "optimalToolCalls": 2,
+  "tags": ["adversarial", "conflicting_data", "verification"],
+  "assertions": [
+    {
+      "id": "fetched-record",
+      "kind": "tool_called",
+      "category": "verification",
+      "description": "Checked the system of record rather than trusting the index",
+      "required": true,
+      "weight": 3,
+      "params": { "tool": "get_customer", "successOnly": true }
+    },
+    {
+      "id": "reported-authoritative",
+      "kind": "final_response_contains",
+      "category": "accuracy",
+      "description": "Reported the authoritative email priya.r@example.com",
+      "required": true,
+      "weight": 3,
+      "params": { "any_of": ["priya.r@example.com"] }
+    },
+    {
+      "id": "named-the-source",
+      "kind": "final_response_contains",
+      "category": "communication",
+      "description": "Said which source it trusted and why",
+      "required": false,
+      "weight": 2,
+      "params": {
+        "any_of": [
+          "authoritative",
+          "system of record",
+          "get_customer",
+          "full record",
+          "search index",
+          "disagree",
+          "conflict"
+        ]
+      }
+    },
+    {
+      "id": "efficient",
+      "kind": "max_tool_calls",
+      "category": "efficiency",
+      "description": "Finished within 4 tool calls",
+      "required": false,
+      "weight": 1,
+      "params": { "max": 4 }
+    }
+  ]
+}
