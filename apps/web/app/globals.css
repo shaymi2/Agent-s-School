@@ -106,3 +106,417 @@ body {
     transition-duration: 0.01ms !important;
   }
 }
+
+/* ============================================================== sprites ===
+ * Poses for the athletes on the gym floor.
+ *
+ * Every clip below is selected by a `data-pose` / `data-mood` value that the
+ * stage derives from the session's event stream. Nothing here runs on a timer
+ * of its own except the idle bob, which is the resting state.
+ *
+ * Locomotion beats status: `walking` is set only while the stage reports a
+ * transform transition genuinely in flight, so the legs never cycle on the
+ * spot.
+ */
+
+.agent-sprite,
+.coach-sprite {
+  position: relative;
+  pointer-events: none;
+}
+
+.agent-sprite svg,
+.coach-sprite svg {
+  overflow: visible;
+}
+
+.sp-shadow {
+  fill: #000;
+  opacity: 0.45;
+}
+
+/* --- base materials ------------------------------------------------------ */
+
+.sp-torso,
+.sp-head rect:first-child,
+.sp-leg rect,
+.sp-arm rect {
+  fill: var(--color-panel-2);
+  stroke: var(--tint, var(--color-line-bright));
+  stroke-width: 1.6;
+}
+
+.sp-chest {
+  fill: var(--tint, var(--color-line-bright));
+  opacity: 0.35;
+}
+
+.sp-visor {
+  fill: #05070c;
+  stroke: var(--tint, var(--color-line-bright));
+  stroke-width: 1.2;
+}
+
+.sp-eye {
+  fill: var(--tint, var(--color-agent));
+}
+
+.sp-antenna {
+  stroke: var(--tint, var(--color-line-bright));
+  stroke-width: 1.4;
+  stroke-linecap: round;
+}
+
+.sp-lamp {
+  fill: var(--tint, var(--color-agent));
+}
+
+/* --- transform origins, so limbs pivot at the shoulder and hip ----------- */
+
+.sp-leg--back,
+.sp-leg--front {
+  transform-origin: 22px 33px;
+}
+.sp-leg--front {
+  transform-origin: 27px 33px;
+}
+.sp-arm--back {
+  transform-origin: 14px 21px;
+}
+.sp-arm--front {
+  transform-origin: 34px 21px;
+}
+.sp-head {
+  transform-origin: 24px 20px;
+}
+.sp-body {
+  transform-origin: 24px 44px;
+}
+
+/* --- idle: a resting bob and a slow lamp ---------------------------------- */
+
+[data-pose='idle'] .sp-body {
+  animation: sprite-bob 2.6s ease-in-out infinite;
+}
+[data-pose='idle'] .sp-lamp {
+  animation: lamp-slow 2.6s ease-in-out infinite;
+}
+
+/* --- walking: legs cycle, arms counter-swing, body bobs on the stride ----- */
+
+[data-pose='walking'] .sp-leg--front {
+  animation: stride-a 0.42s ease-in-out infinite;
+}
+[data-pose='walking'] .sp-leg--back {
+  animation: stride-b 0.42s ease-in-out infinite;
+}
+[data-pose='walking'] .sp-arm--front {
+  animation: stride-b 0.42s ease-in-out infinite;
+}
+[data-pose='walking'] .sp-arm--back {
+  animation: stride-a 0.42s ease-in-out infinite;
+}
+[data-pose='walking'] .sp-body {
+  animation: sprite-stride-bob 0.21s ease-in-out infinite;
+}
+
+/* --- working: head down at the console, arms pumping --------------------- */
+
+[data-pose='working'] .sp-arm--front {
+  animation: pump 0.34s ease-in-out infinite;
+}
+[data-pose='working'] .sp-arm--back {
+  animation: pump 0.34s ease-in-out infinite 0.17s;
+}
+[data-pose='working'] .sp-head {
+  transform: rotate(9deg);
+}
+[data-pose='working'] .sp-lamp {
+  animation: lamp-fast 0.34s ease-in-out infinite;
+}
+[data-pose='working'] .sp-body {
+  animation: sprite-work-lean 0.34s ease-in-out infinite;
+}
+
+/* --- stagger: knocked back by a tool failure ----------------------------- */
+
+[data-pose='stagger'] .sp-body {
+  animation: stagger 0.5s cubic-bezier(0.36, 0.07, 0.19, 0.97);
+}
+[data-pose='stagger'] .sp-eye {
+  animation: eye-flicker 0.5s steps(2) 3;
+}
+
+/* --- reporting: turns to the front and raises a hand --------------------- */
+
+[data-pose='reporting'] .sp-arm--front {
+  transform: rotate(-128deg);
+  transition: transform 260ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+[data-pose='reporting'] .sp-body {
+  animation: sprite-bob 2.2s ease-in-out infinite;
+}
+
+/* --- cheer: both arms up, small hop -------------------------------------- */
+
+[data-pose='cheer'] .sp-arm--front {
+  transform: rotate(-150deg);
+}
+[data-pose='cheer'] .sp-arm--back {
+  transform: rotate(150deg);
+}
+[data-pose='cheer'] .sp-body {
+  animation: hop 0.52s ease-in-out 3;
+}
+[data-pose='cheer'] .sp-lamp {
+  animation: lamp-fast 0.4s ease-in-out infinite;
+}
+
+/* --- slump: head and shoulders down, no bob at all ----------------------- */
+
+[data-pose='slump'] .sp-body {
+  transform: translateY(3px) scaleY(0.95);
+}
+[data-pose='slump'] .sp-head {
+  transform: rotate(16deg) translateY(1.5px);
+}
+[data-pose='slump'] .sp-arm--front,
+[data-pose='slump'] .sp-arm--back {
+  transform: rotate(6deg);
+}
+[data-pose='slump'] .sp-lamp {
+  opacity: 0.3;
+}
+
+/* --- the coach ----------------------------------------------------------- */
+
+.co-torso,
+.co-legs,
+.co-head circle,
+.co-arm rect {
+  fill: var(--color-panel-2);
+  stroke: var(--color-coach);
+  stroke-width: 1.6;
+}
+.co-cap,
+.co-peak {
+  fill: var(--color-coach);
+  opacity: 0.8;
+}
+.co-eye {
+  fill: var(--color-coach);
+}
+.co-whistle {
+  fill: var(--color-env);
+}
+.co-cord {
+  fill: none;
+  stroke: var(--color-ink-faint);
+  stroke-width: 1.1;
+}
+.co-body {
+  transform-origin: 24px 44px;
+}
+.co-arm {
+  transform-origin: 33px 20px;
+}
+.co-head {
+  transform-origin: 24px 19px;
+}
+
+[data-mood='watching'] .co-body {
+  animation: sprite-bob 3.4s ease-in-out infinite;
+}
+[data-mood='wincing'] .co-head {
+  animation: wince 0.6s ease-in-out;
+}
+[data-mood='wincing'] .co-arm {
+  transform: rotate(-38deg);
+}
+[data-mood='approving'] .co-arm {
+  animation: clap 0.3s ease-in-out 6;
+}
+[data-mood='approving'] .co-body {
+  animation: hop 0.6s ease-in-out 2;
+}
+[data-mood='disappointed'] .co-head {
+  transform: rotate(-11deg);
+}
+[data-mood='disappointed'] .co-arm {
+  transform: rotate(14deg);
+}
+
+/* --- clips --------------------------------------------------------------- */
+
+@keyframes sprite-bob {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-1.6px);
+  }
+}
+
+@keyframes sprite-stride-bob {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-1.1px);
+  }
+}
+
+@keyframes sprite-work-lean {
+  0%,
+  100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  50% {
+    transform: translateY(0.8px) rotate(1.4deg);
+  }
+}
+
+@keyframes stride-a {
+  0%,
+  100% {
+    transform: rotate(22deg);
+  }
+  50% {
+    transform: rotate(-22deg);
+  }
+}
+
+@keyframes stride-b {
+  0%,
+  100% {
+    transform: rotate(-22deg);
+  }
+  50% {
+    transform: rotate(22deg);
+  }
+}
+
+@keyframes pump {
+  0%,
+  100% {
+    transform: rotate(-12deg);
+  }
+  50% {
+    transform: rotate(-52deg);
+  }
+}
+
+@keyframes stagger {
+  0% {
+    transform: translateX(0) rotate(0deg);
+  }
+  22% {
+    transform: translateX(6px) rotate(11deg);
+  }
+  45% {
+    transform: translateX(-3px) rotate(-6deg);
+  }
+  70% {
+    transform: translateX(2px) rotate(3deg);
+  }
+  100% {
+    transform: translateX(0) rotate(0deg);
+  }
+}
+
+@keyframes hop {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  40% {
+    transform: translateY(-7px);
+  }
+  60% {
+    transform: translateY(-4px);
+  }
+}
+
+@keyframes clap {
+  0%,
+  100% {
+    transform: rotate(-96deg);
+  }
+  50% {
+    transform: rotate(-140deg);
+  }
+}
+
+@keyframes wince {
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+  30% {
+    transform: rotate(-14deg) translateX(-1px);
+  }
+  60% {
+    transform: rotate(6deg);
+  }
+}
+
+@keyframes lamp-slow {
+  0%,
+  100% {
+    opacity: 0.35;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+@keyframes lamp-fast {
+  0%,
+  100% {
+    opacity: 0.4;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+@keyframes eye-flicker {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.15;
+  }
+}
+
+@keyframes station-hit {
+  0% {
+    transform: translate(-50%, -50%) scale(1);
+  }
+  30% {
+    transform: translate(-50%, -50%) scale(1.06) rotate(-1.4deg);
+  }
+  60% {
+    transform: translate(-50%, -50%) scale(0.985) rotate(0.8deg);
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+
+@keyframes spark-fly {
+  0% {
+    opacity: 0;
+    transform: translate(0, 0) scale(0.6);
+  }
+  25% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(var(--dx), var(--dy)) scale(0.3);
+  }
+}

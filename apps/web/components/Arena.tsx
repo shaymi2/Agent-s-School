@@ -116,6 +116,7 @@ export function Arena({ exercise }: { exercise: WireExercise }) {
           task={exercise.task}
           optimalToolCalls={exercise.optimalToolCalls}
           running={running}
+          toolBudget={agent?.maxSteps}
         />
 
         <div className="space-y-4">
