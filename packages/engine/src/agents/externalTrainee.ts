@@ -29,7 +29,11 @@ export class ExternalTraineeAgent implements TraineeAgent {
 
   run(context: TraineeContext, invoke: ToolInvoker): Promise<TraineeOutcome> {
     this.invoker = invoke;
-    this.maxSteps = context.maxSteps;
+    // Fail closed. A non-finite budget would make every `steps >= maxSteps`
+    // comparison false and let an external caller run tools without end.
+    this.maxSteps = Number.isFinite(context.maxSteps)
+      ? Math.max(0, Math.floor(context.maxSteps))
+      : 0;
     return new Promise<TraineeOutcome>((resolve) => {
       this.settle = resolve;
     });

@@ -11,6 +11,6 @@ export async function GET(
   const { id } = await params;
   const store = gym().store;
   const agent = store.getAgent(id);
-  if (!agent) return fail(`No agent "${id}"`, 404);
+  if (!agent) return fail('No such agent', 404);
   return json({ fitness: toWireFitness(agent.id, agent.name, store.listProfiles(agent.id)) });
 }

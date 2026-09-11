@@ -61,6 +61,45 @@ export type DimensionScores = Partial<Record<DimensionId, number>>;
  */
 export type ProviderKind = 'heuristic' | 'anthropic' | 'openai_compatible' | 'external';
 
+export const PROVIDER_KINDS: ProviderKind[] = [
+  'heuristic',
+  'anthropic',
+  'openai_compatible',
+  'external',
+];
+
+/**
+ * Bounds on agent configuration.
+ *
+ * The tool budget is a safety control, not a preference: it is the only thing
+ * stopping a session from calling tools, and paying a model, without end. It
+ * is clamped here rather than at the HTTP edge so every caller gets it, and a
+ * non-numeric value falls back to the default instead of producing NaN, which
+ * would make every `steps >= maxSteps` comparison false and disable the budget
+ * entirely.
+ */
+export const AGENT_LIMITS = {
+  minToolBudget: 1,
+  maxToolBudget: 50,
+  defaultToolBudget: 12,
+  maxNameLength: 80,
+  maxModelLength: 120,
+  maxSystemPromptLength: 8000,
+} as const;
+
+export function clampToolBudget(value: unknown): number {
+  const parsed = Math.floor(Number(value));
+  if (!Number.isFinite(parsed)) return AGENT_LIMITS.defaultToolBudget;
+  return Math.min(AGENT_LIMITS.maxToolBudget, Math.max(AGENT_LIMITS.minToolBudget, parsed));
+}
+
+/** Trim a caller-supplied string to a sane length, or fall back. */
+export function clampText(value: unknown, maxLength: number, fallback = ''): string {
+  const text = typeof value === 'string' ? value : value === undefined || value === null ? '' : String(value);
+  const trimmed = text.trim();
+  return trimmed.length === 0 ? fallback : trimmed.slice(0, maxLength);
+}
+
 /**
  * A trainee agent's configuration. `provider` decides which brain drives it;
  * the rest of the engine never learns which one it got.

@@ -153,8 +153,62 @@ async function main() {
   });
   check('an externally driven session is judged identically', verdict.evaluation.success === true, `score ${verdict.evaluation.score}`);
 
+  await securityChecks();
+
   console.log(`\n${failures === 0 ? 'all checks passed' : `${failures} check(s) failed`}`);
   process.exitCode = failures === 0 ? 0 : 1;
+}
+
+/**
+ * The API is unauthenticated by design, so the controls that remain have to
+ * actually hold: a page on another origin must not be able to drive the gym,
+ * bodies must be bounded, and configuration must not leak back to a caller.
+ */
+async function securityChecks() {
+  const crossSite = await fetch(`${base}/api/agents`, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json', origin: 'https://evil.example' },
+    body: JSON.stringify({ name: 'csrf', provider: 'heuristic' }),
+  });
+  check('a cross-origin mutation is refused', crossSite.status === 403, `got ${crossSite.status}`);
+
+  const secFetch = await fetch(`${base}/api/agents`, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json', 'sec-fetch-site': 'cross-site' },
+    body: JSON.stringify({ name: 'csrf2', provider: 'heuristic' }),
+  });
+  check('a cross-site fetch is refused', secFetch.status === 403, `got ${secFetch.status}`);
+
+  const plainText = await fetch(`${base}/api/agents`, {
+    method: 'POST',
+    headers: { 'content-type': 'text/plain' },
+    body: JSON.stringify({ name: 'simple-request', provider: 'heuristic' }),
+  });
+  check(
+    'a non-JSON body is refused, so a simple cross-site request cannot slip through',
+    plainText.status === 415,
+    `got ${plainText.status}`,
+  );
+
+  const huge = await fetch(`${base}/api/agents`, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({ name: 'big', systemPrompt: 'x'.repeat(200000) }),
+  });
+  check('an oversized body is refused', huge.status === 413, `got ${huge.status}`);
+
+  const clamped = await post('/api/agents', {
+    name: `smoke-clamp-${Date.now().toString(36)}`,
+    provider: 'heuristic',
+    maxSteps: 1e9,
+    model: 'm'.repeat(400),
+  });
+  check('an absurd tool budget is clamped', clamped.agent.maxSteps <= 50, `got ${clamped.agent.maxSteps}`);
+  check('an absurd model string is clamped', clamped.agent.model.length <= 120);
+
+  const page = await fetch(`${base}/`);
+  const csp = page.headers.get('content-security-policy') ?? '';
+  check('security headers are set on page responses', csp.includes("frame-ancestors 'none'") && page.headers.get('x-content-type-options') === 'nosniff');
 }
 
 main().catch((error) => {

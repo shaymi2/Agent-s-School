@@ -57,8 +57,13 @@ export class ToolExecutor {
         ...partial,
       });
 
-    const impl = TOOL_REGISTRY[call.name];
-    if (!impl || !this.allowed.has(call.name)) {
+    // The allow-list is checked first and the registry is read with an
+    // own-property lookup, so a name like "constructor" can never resolve to
+    // something inherited from Object.prototype.
+    const impl = this.allowed.has(call.name) && Object.hasOwn(TOOL_REGISTRY, call.name)
+      ? TOOL_REGISTRY[call.name]
+      : undefined;
+    if (!impl) {
       return finish(
         {
           ok: false,

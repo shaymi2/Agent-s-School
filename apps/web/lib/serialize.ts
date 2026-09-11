@@ -14,6 +14,7 @@ import type {
   GymEvent,
   Session,
 } from '@gym/engine';
+import { redact } from './guard';
 import type {
   WireCoachFeedback,
   WireEvaluation,
@@ -77,7 +78,9 @@ export function toWireSession(session: Session, agentName: string): WireSession 
     success: session.success,
     finalResponse: session.finalResponse,
     guidanceRules: session.guidance?.rules ?? [],
-    error: session.error,
+    // A provider failure is stored on the session and served here, so it is
+    // redacted and truncated on the way out.
+    error: redact(session.error),
   };
 }
 

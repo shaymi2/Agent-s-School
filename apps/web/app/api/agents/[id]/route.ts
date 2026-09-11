@@ -11,6 +11,6 @@ export async function GET(
 ): Promise<Response> {
   const { id } = await params;
   const agent = gym().store.getAgent(id);
-  if (!agent) return fail(`No agent "${id}"`, 404);
+  if (!agent) return fail('No such agent', 404);
   return json({ agent: { ...agent, available: providerAvailable(agent.provider) } });
 }

@@ -7,8 +7,8 @@ export const dynamic = 'force-dynamic';
 /** GET /api/exercises?skill=tool_usage&agentId=... */
 export function GET(request: Request): Response {
   const url = new URL(request.url);
-  const skill = url.searchParams.get('skill') ?? undefined;
-  const agentId = url.searchParams.get('agentId');
+  const skill = url.searchParams.get('skill')?.slice(0, 64) || undefined;
+  const agentId = url.searchParams.get('agentId')?.slice(0, 100) || null;
 
   const exercises = listExercises(skill).map(toWireExercise);
 

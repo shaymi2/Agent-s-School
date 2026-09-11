@@ -47,6 +47,6 @@ export { GymStore } from './store/repositories.ts';
 export type { SessionSnapshot } from './store/repositories.ts';
 export { openDatabase } from './store/db.ts';
 
-export { GymOrchestrator } from './orchestrator/orchestrator.ts';
+export { GymOrchestrator, MAX_FINAL_RESPONSE } from './orchestrator/orchestrator.ts';
 export type { SessionResult, RunRequest, OrchestratorOptions } from './orchestrator/orchestrator.ts';
 export { EventBus, gymBus } from './orchestrator/eventBus.ts';

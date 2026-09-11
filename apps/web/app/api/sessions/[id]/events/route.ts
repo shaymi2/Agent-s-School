@@ -5,6 +5,9 @@ import type { GymEvent } from '@gym/engine';
 
 export const dynamic = 'force-dynamic';
 
+/** Hard ceiling on how long one event stream may stay open. */
+const MAX_STREAM_MS = 10 * 60 * 1000;
+
 /**
  * GET /api/sessions/:id/events — Server-Sent Events for one session.
  *
@@ -27,6 +30,7 @@ export async function GET(
   let unsubscribe: (() => void) | null = null;
   let heartbeat: ReturnType<typeof setInterval> | null = null;
   let poll: ReturnType<typeof setInterval> | null = null;
+  let lifetime: ReturnType<typeof setTimeout> | null = null;
 
   const stream = new ReadableStream<Uint8Array>({
     start(controller) {
@@ -50,6 +54,7 @@ export async function GET(
         unsubscribe?.();
         if (heartbeat) clearInterval(heartbeat);
         if (poll) clearInterval(poll);
+        if (lifetime) clearTimeout(lifetime);
         try {
           controller.close();
         } catch {
@@ -93,6 +98,10 @@ export async function GET(
         }
       }, 200);
 
+      // A session that hangs (a model call that never returns, say) must not
+      // hold a stream and its timers open indefinitely.
+      lifetime = setTimeout(close, MAX_STREAM_MS);
+
       heartbeat = setInterval(() => {
         if (closed) return;
         try {
@@ -108,6 +117,7 @@ export async function GET(
       unsubscribe?.();
       if (heartbeat) clearInterval(heartbeat);
       if (poll) clearInterval(poll);
+      if (lifetime) clearTimeout(lifetime);
     },
   });
 

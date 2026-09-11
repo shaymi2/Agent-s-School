@@ -54,6 +54,9 @@ export interface SessionResult {
   transcript: SessionTranscript;
 }
 
+/** Upper bound on the agent's final report, in characters. */
+export const MAX_FINAL_RESPONSE = 20000;
+
 export interface RunRequest {
   agentId: string;
   exerciseId: string;
@@ -191,7 +194,10 @@ export class GymOrchestrator {
         },
         invoke,
       );
-      finalResponse = outcome.finalResponse;
+      // The report is stored, re-served by the API and read by the judge. It
+      // comes from the trainee, which for an external agent means it comes
+      // from whoever is driving the session, so it is bounded here.
+      finalResponse = String(outcome.finalResponse ?? '').slice(0, MAX_FINAL_RESPONSE);
       stopReason = outcome.stopReason;
       stepsUsed = outcome.stepsUsed;
       if (outcome.providerError) {

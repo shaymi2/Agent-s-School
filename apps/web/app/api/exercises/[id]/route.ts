@@ -10,6 +10,6 @@ export async function GET(
 ): Promise<Response> {
   const { id } = await params;
   const exercise = getExercise(id);
-  if (!exercise) return fail(`No exercise "${id}"`, 404);
+  if (!exercise) return fail('No such exercise', 404);
   return json({ exercise: toWireExercise(exercise), assertions: exercise.assertions.length });
 }

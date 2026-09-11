@@ -20,7 +20,7 @@ export async function GET(
   const { id } = await params;
   const store = gym().store;
   const session = store.getSession(id);
-  if (!session) return fail(`No session "${id}"`, 404);
+  if (!session) return fail('No such session', 404);
 
   const agent = store.getAgent(session.agentId);
   const evaluation = store.getEvaluation(id);

@@ -68,6 +68,15 @@ function bootstrapAgents(store: GymStore): void {
 }
 
 /**
+ * How many sessions may execute at once.
+ *
+ * A session can call a paid model, and the API has no authentication, so the
+ * number of runs in flight is bounded. Without this one unattended caller can
+ * spend the operator's credits as fast as the server accepts connections.
+ */
+export const MAX_CONCURRENT_SESSIONS = Number(process.env.GYM_MAX_CONCURRENT_SESSIONS ?? 4);
+
+/**
  * Start a prepared session in the background and let its events stream.
  *
  * An `external` agent gets a handle the API routes can push tool calls into;
@@ -76,6 +85,11 @@ function bootstrapAgents(store: GymStore): void {
 export function startSession(session: Session, provider: string): void {
   const runtime = gym();
   if (runtime.running.has(session.id)) return;
+  if (runtime.running.size >= MAX_CONCURRENT_SESSIONS) {
+    throw new Error(
+      `Too many sessions are already running (limit ${MAX_CONCURRENT_SESSIONS}). Wait for one to finish.`,
+    );
+  }
 
   let trainee: ExternalTraineeAgent | undefined;
   if (provider === 'external') {

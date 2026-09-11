@@ -1,6 +1,7 @@
 import { gym } from '@/lib/gym';
 import { getExercise } from '@gym/engine';
 import { toWireSession, json, fail } from '@/lib/serialize';
+import { boundedLimit, guardMutation, safeError } from '@/lib/guard';
 
 export const dynamic = 'force-dynamic';
 
@@ -12,14 +13,17 @@ export const dynamic = 'force-dynamic';
  * sees the first tool call.
  */
 export async function POST(request: Request): Promise<Response> {
-  const body = (await request.json().catch(() => ({}))) as Record<string, unknown>;
-  const agentId = String(body.agentId ?? '');
-  const exerciseId = String(body.exerciseId ?? '');
+  const guarded = await guardMutation(request);
+  if (guarded instanceof Response) return guarded;
+  const { body } = guarded;
+
+  const agentId = String(body.agentId ?? '').slice(0, 100);
+  const exerciseId = String(body.exerciseId ?? '').slice(0, 100);
 
   const store = gym().store;
   const agent = store.getAgent(agentId);
-  if (!agent) return fail(`No agent "${agentId}"`, 404);
-  if (!getExercise(exerciseId)) return fail(`No exercise "${exerciseId}"`, 404);
+  if (!agent) return fail('No such agent', 404);
+  if (!getExercise(exerciseId)) return fail('No such exercise', 404);
 
   try {
     const session = gym().orchestrator.prepareSession({
@@ -30,7 +34,7 @@ export async function POST(request: Request): Promise<Response> {
     });
     return json({ session: toWireSession(session, agent.name) }, 201);
   } catch (error) {
-    return fail(error instanceof Error ? error.message : String(error), 400);
+    return safeError('Preparing the session', error, 400);
   }
 }
 
@@ -40,9 +44,9 @@ export function GET(request: Request): Response {
   const store = gym().store;
   const sessions = store
     .listSessions({
-      agentId: url.searchParams.get('agentId') ?? undefined,
-      exerciseId: url.searchParams.get('exerciseId') ?? undefined,
-      limit: Number(url.searchParams.get('limit') ?? 25),
+      agentId: url.searchParams.get('agentId')?.slice(0, 100) || undefined,
+      exerciseId: url.searchParams.get('exerciseId')?.slice(0, 100) || undefined,
+      limit: boundedLimit(url.searchParams.get('limit'), 25, 200),
     })
     .map((session) => toWireSession(session, store.getAgent(session.agentId)?.name ?? 'unknown'));
   return json({ sessions });

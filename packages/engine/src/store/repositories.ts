@@ -10,6 +10,7 @@ import { openDatabase } from './db.ts';
 import type { Db } from './db.ts';
 import { listExercises, listSkills } from '../exercises/catalog.ts';
 import { newId } from '../domain/ids.ts';
+import { AGENT_LIMITS, PROVIDER_KINDS, clampText, clampToolBudget } from '../domain/types.ts';
 import type {
   AgentConfig,
   CoachFeedback,
@@ -17,6 +18,7 @@ import type {
   ExerciseDefinition,
   FitnessProfile,
   GymEvent,
+  ProviderKind,
   Session,
 } from '../domain/types.ts';
 
@@ -65,15 +67,26 @@ export class GymStore {
 
   /* ------------------------------------------------------------- agents -- */
 
+  /**
+   * Register a trainee. Every field is clamped here, so an agent that reaches
+   * the orchestrator always carries a finite tool budget and bounded text, no
+   * matter which caller created it.
+   */
   createAgent(input: Partial<AgentConfig> & { name: string }): AgentConfig {
+    const provider = PROVIDER_KINDS.includes(input.provider as ProviderKind)
+      ? (input.provider as ProviderKind)
+      : 'heuristic';
     const agent: AgentConfig = {
       id: input.id ?? newId('agent'),
-      name: input.name,
-      provider: input.provider ?? 'heuristic',
-      model: input.model ?? 'reflex-v1',
-      systemPrompt: input.systemPrompt,
-      temperature: input.temperature,
-      maxSteps: input.maxSteps ?? 12,
+      name: clampText(input.name, AGENT_LIMITS.maxNameLength, 'Unnamed trainee'),
+      provider,
+      model: clampText(input.model, AGENT_LIMITS.maxModelLength, 'reflex-v1'),
+      systemPrompt:
+        input.systemPrompt === undefined
+          ? undefined
+          : clampText(input.systemPrompt, AGENT_LIMITS.maxSystemPromptLength) || undefined,
+      temperature: Number.isFinite(Number(input.temperature)) ? Number(input.temperature) : undefined,
+      maxSteps: clampToolBudget(input.maxSteps),
       createdAt: input.createdAt ?? new Date().toISOString(),
     };
     this.db
@@ -162,7 +175,7 @@ export class GymStore {
     const where = clauses.length > 0 ? `WHERE ${clauses.join(' AND ')}` : '';
     const rows = this.db
       .prepare(`SELECT * FROM sessions ${where} ORDER BY started_at DESC LIMIT ?`)
-      .all(...(args as never[]), filter.limit ?? 100) as Row[];
+      .all(...(args as never[]), boundedLimit(filter.limit)) as Row[];
     return rows.map(rowToSession);
   }
 
@@ -315,6 +328,13 @@ export class GymStore {
     ) as Row[];
     return rows.map((row) => JSON.parse(String(row.definition)) as ExerciseDefinition);
   }
+}
+
+/** A page size that is always a finite, sane integer. */
+function boundedLimit(value: unknown, fallback = 100, max = 500): number {
+  const parsed = Math.floor(Number(value));
+  if (!Number.isFinite(parsed) || parsed <= 0) return fallback;
+  return Math.min(parsed, max);
 }
 
 function rowToAgent(row: Row): AgentConfig {

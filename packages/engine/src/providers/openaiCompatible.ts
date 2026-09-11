@@ -9,6 +9,26 @@
 import { extractJson, ProviderUnavailableError } from './types.ts';
 import type { CompleteRequest, JsonRequest, LlmCompletion, LlmProvider } from './types.ts';
 
+/**
+ * Strip anything secret from an endpoint before it can appear in an error.
+ *
+ * Provider errors travel: they are stored on the session and served by the
+ * API, so they must not carry credentials. A base URL may legitimately embed
+ * them (https://user:key@host/v1), and query strings are used as an API key
+ * channel by some gateways.
+ */
+function safeEndpoint(raw: string): string {
+  try {
+    const url = new URL(raw);
+    url.username = '';
+    url.password = '';
+    url.search = '';
+    return `${url.protocol}//${url.host}${url.pathname}`;
+  } catch {
+    return '<configured endpoint>';
+  }
+}
+
 interface ChatChoice {
   message: {
     content: string | null;
@@ -39,9 +59,17 @@ export class OpenAiCompatibleProvider implements LlmProvider {
       body: JSON.stringify({ model: this.model, ...body }),
     });
     if (!response.ok) {
-      const detail = await response.text();
+      // The upstream body can echo the request, including headers or prompt
+      // content. It is useful to an operator reading the server log and has no
+      // business being returned to an API client, so the two are split here.
+      const detail = await response.text().catch(() => '');
+      if (detail) {
+        console.error(
+          `[gym] ${safeEndpoint(this.baseUrl)} returned ${response.status}: ${detail.slice(0, 500)}`,
+        );
+      }
       throw new ProviderUnavailableError(
-        `${this.baseUrl} returned ${response.status}: ${detail.slice(0, 300)}`,
+        `The configured model endpoint returned ${response.status}. See the server log for the response body.`,
       );
     }
     const payload = (await response.json()) as { choices?: ChatChoice[] };

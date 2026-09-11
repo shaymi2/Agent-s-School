@@ -1,5 +1,7 @@
 import { awaitSession, externalTrainee, gym } from '@/lib/gym';
+import { MAX_FINAL_RESPONSE } from '@gym/engine';
 import { toWireEvaluation, toWireFeedback, json, fail } from '@/lib/serialize';
+import { guardMutation, safeError } from '@/lib/guard';
 
 export const dynamic = 'force-dynamic';
 
@@ -13,16 +15,23 @@ export async function POST(
   request: Request,
   { params }: { params: Promise<{ id: string }> },
 ): Promise<Response> {
+  const guarded = await guardMutation(request);
+  if (guarded instanceof Response) return guarded;
+  const { body } = guarded;
+
   const { id } = await params;
   const store = gym().store;
-  if (!store.getSession(id)) return fail(`No session "${id}"`, 404);
+  if (!store.getSession(id)) return fail('No such session', 404);
 
   const trainee = externalTrainee(id);
-  if (!trainee) return fail(`Session "${id}" is not an open external session`, 409);
+  if (!trainee) return fail('This session is not an open external session', 409);
 
-  const body = (await request.json().catch(() => ({}))) as Record<string, unknown>;
-  trainee.finish(String(body.finalResponse ?? ''));
-  await awaitSession(id);
+  try {
+    trainee.finish(String(body.finalResponse ?? '').slice(0, MAX_FINAL_RESPONSE));
+    await awaitSession(id);
+  } catch (error) {
+    return safeError('Finishing the session', error);
+  }
 
   const evaluation = store.getEvaluation(id);
   const feedback = store.getFeedback(id);
